@@ -16,7 +16,12 @@ const db = admin.database();
 const app = express();
 
 // Gunakan middleware CORS untuk mengizinkan permintaan dari semua origin (atau tentukan origin yang diizinkan)
-app.use(cors({ origin: '*' }));  // Anda bisa mengganti '*' dengan URL frontend yang lebih aman, misalnya: 'https://gdgoc-blacknwhite03s-projects.vercel.app'
+app.use(cors({
+    origin: 'https://gdgoc-blacknwhite03s-projects.vercel.app',  // Ganti dengan URL frontend Anda
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Pastikan method yang diizinkan ada
+    allowedHeaders: ['Content-Type', 'Authorization'],  // Header yang diizinkan
+    credentials: true  // Jika Anda mengirimkan kredensial (seperti cookies)
+}));
 
 app.use(bodyParser.json());
 
