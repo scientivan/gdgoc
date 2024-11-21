@@ -3,10 +3,9 @@ const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const cors = require('cors');
 
-// Gunakan kredensial Firebase yang ada di environment variable
-const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);  // Mengambil FIREBASE_KEY dari environment variable
+// Inisialisasi Firebase
+const serviceAccount = require('../firebaseKey.json');
 
-// Inisialisasi Firebase Admin SDK
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://penugasan-gdgoc-default-rtdb.asia-southeast1.firebasedatabase.app/'
@@ -15,20 +14,25 @@ admin.initializeApp({
 const db = admin.database();
 const app = express();
 
-// Gunakan middleware CORS untuk mengizinkan permintaan dari semua origin (atau tentukan origin yang diizinkan)
-app.use(cors({
-    origin: 'https://gdgoc-blacknwhite03s-projects.vercel.app',  // Ganti dengan URL frontend Anda
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Pastikan method yang diizinkan ada
-    allowedHeaders: ['Content-Type', 'Authorization'],  // Header yang diizinkan
-    credentials: true  // Jika Anda mengirimkan kredensial (seperti cookies)
-}));
+// Konfigurasi CORS
+const corsOptions = {
+    origin: 'https://gdgoc-blacknwhite03s-projects.vercel.app',  // Ganti dengan domain frontend Anda
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Pastikan metode yang dibutuhkan diizinkan
+    allowedHeaders: ['Content-Type'],  // Header yang diizinkan
+    credentials: true  // Jika menggunakan cookies atau kredensial lain
+};
 
+// Gunakan middleware CORS dengan opsi
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
+
+// Menangani permintaan preflight OPTIONS
+app.options('*', cors(corsOptions));  // Menangani preflight request
 
 app.get('/', (req, res) => res.send('Halo!'));
 const PORT = 8000;
 
-// Create: Menambahkan buku baru
+// create
 app.post('/api/books', async (req, res) => {
     const { id, title, author, published_at } = req.body;
     if (!title || !author || !published_at) {
@@ -51,7 +55,7 @@ app.post('/api/books', async (req, res) => {
     }
 });
 
-// Read: Mengambil daftar buku
+// read
 app.get('/api/books', async (req, res) => {
     try {
         const snapshot = await db.ref('books').once('value');
@@ -64,7 +68,7 @@ app.get('/api/books', async (req, res) => {
     }
 });
 
-// Update: Mengupdate informasi buku
+// update
 app.put('/api/books/:id', async (req, res) => {
     const { id } = req.params;
     const { title, author, published_at } = req.body;
@@ -91,7 +95,7 @@ app.put('/api/books/:id', async (req, res) => {
     }
 });
 
-// Delete: Menghapus buku
+// delete
 app.delete('/api/books/:id', async (req, res) => {
     const { id } = req.params;
     try {
